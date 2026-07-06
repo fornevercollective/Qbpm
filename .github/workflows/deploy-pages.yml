@@ -23,8 +23,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build static shell
-        run: chmod +x deploy/build-static.sh && ./deploy/build-static.sh Qbpm _site
+      - name: Build static shell (forge variant)
+        run: chmod +x deploy/build-static.sh && VARIANT=forge ./deploy/build-static.sh Qbpm _site
 
       - uses: actions/configure-pages@v5
 
