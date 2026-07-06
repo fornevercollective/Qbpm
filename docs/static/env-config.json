@@ -1,0 +1,9 @@
+{
+  "variant": "forge",
+  "label": "Forge",
+  "origin": "https://fornevercollective.github.io/Qbpm/",
+  "basePath": "/Qbpm",
+  "staticShell": true,
+  "defaultApiBase": "https://api.qbitos.ai",
+  "buildTs": "2026-07-06T04:52:54.467791Z"
+}
