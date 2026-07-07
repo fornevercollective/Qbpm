@@ -106,8 +106,16 @@
           <button id="measure-next-btn" class="btn btn-secondary">⏭</button>
           <button id="mirror-btn" class="btn btn-accent">Mirror</button>
         </div>
+        <label class="album-ctrl" style="margin-top:10px">
+          <span>Instrument</span>
+          <select id="voice-select"></select>
+        </label>
+        <p id="genre-suggest" style="font-size:0.75rem;color:var(--muted);margin:6px 0 0"></p>
         <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:0.85rem;color:var(--muted)">
-          <input type="checkbox" id="guide-audio"> Guide tones (speaker)
+          <input type="checkbox" id="guide-audio" checked> Guide tones (speaker)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:0.85rem;color:var(--muted)">
+          <input type="file" id="midi-import" accept=".mid,.midi,audio/midi" style="font-size:0.75rem">
         </label>
         <p style="font-size:0.75rem;color:var(--muted);margin-top:8px">Transport &amp; speed live in the score bar above — letters scroll with the keys.</p>
       </div>

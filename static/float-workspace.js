@@ -45,6 +45,9 @@ export function createFloatWorkspace(opts = {}) {
     getFrames,
     onJamEval,
     onWorkspaceChange,
+    onMusicPack,
+    onGenreApply,
+    onGrokChain,
   } = opts;
 
   let chatToId = "all";
@@ -194,6 +197,9 @@ export function createFloatWorkspace(opts = {}) {
         return dawLink?.linkDaw?.(id, !was);
       },
       onDawOpen: (id) => dawLink?.openDawRepo?.(id),
+      onMusicPack,
+      onGenreApply,
+      onGrokChain,
     });
     musicLab.mount(document.getElementById("float-music-lab-host"));
     dawLink.init().then(() => {

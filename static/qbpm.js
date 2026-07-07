@@ -42,6 +42,9 @@ import {
 } from "./node-registry.js";
 import { drawNodeWaveform } from "./node-waveform.js";
 import { applyStudioPreset, drawStudioLanes } from "./studio-presets.js";
+import { handleMusicCommand, handleMusicPrompt, runGrokMusicChain } from "./music-grok.js";
+import { applyMusicPackToGraph } from "./music-ai.js";
+import { GENRE_PRESETS } from "./genre-presets.js";
 import {
   appendVideoLaneChain,
   appendVideoLaneNode,
@@ -815,9 +818,26 @@ async function ingestWatchUrl(url, opts = {}) {
   }
 }
 
+function musicCommandCtx() {
+  return {
+    graph,
+    owner: collab?.clientId || "local",
+    core: floatWorkspace?.getMusicCore?.(),
+    strudelPane: floatWorkspace?.getStrudelPane?.(),
+    setGraph: (g) => {
+      graph = g;
+      draw();
+      collab?.broadcastPatch?.({ nodes: graph.nodes, edges: graph.edges, meta: graph.meta });
+    },
+    onLog: (msg) => collabShell?.appendPromptOutput?.(msg),
+  };
+}
+
 async function runPromptSearch(q) {
   collabShell?.appendPromptOutput(`> ${q}`);
   const low = q.toLowerCase();
+  const musicHit = await handleMusicPrompt(q, musicCommandCtx());
+  if (musicHit) return;
   if (isWatchUrl(q)) {
     await ingestWatchUrl(q, { verbose: true });
     return;
@@ -1117,6 +1137,33 @@ function initCollab() {
       floatWorkspace?.openDockPanel?.("grand");
       window.qbpmTools?.openTool?.("piano");
       collabShell?.appendPromptOutput?.(`grand piano ← ${payload?.musica?.slice(0, 40) || "pattern"}`);
+    },
+    onMusicPack: (packId) => {
+      const before = graph.nodes.length;
+      const next = applyMusicPackToGraph(graph, packId, collab?.clientId || "local");
+      graph = next;
+      draw();
+      collab?.broadcastPatch?.({ nodes: graph.nodes, edges: graph.edges, meta: graph.meta });
+      collabShell?.appendPromptOutput?.(`⊕ pack · ${packId} · +${next.nodes.length - before} nodes`);
+      const genre = next.meta?.genre;
+      if (genre) floatWorkspace?.getMusicCore?.()?.applyGenre?.(genre);
+    },
+    onGenreApply: (genreId) => {
+      const g = GENRE_PRESETS[genreId];
+      graph.meta = { ...graph.meta, genre: genreId, theory: { ...graph.meta?.theory, ...g?.theory, bpm: g?.bpm } };
+      draw();
+      if (g?.strudel) floatWorkspace?.getStrudelPane?.()?.playCode?.(`setcps(${g.bpm / 60 / 2})\n${g.strudel}`);
+    },
+    onGrokChain: async () => {
+      const results = await runGrokMusicChain(graph, {
+        core: floatWorkspace?.getMusicCore?.(),
+        strudelPane: floatWorkspace?.getStrudelPane?.(),
+        applyPack: (pid) => {
+          graph = applyMusicPackToGraph(graph, pid, collab?.clientId || "local");
+        },
+      });
+      draw();
+      collabShell?.appendPromptOutput?.(`◎ grok chain · ${results.length} · ${results.map((r) => r.result?.genreId).join(", ")}`);
     },
     onJamEval: (src, bpm) => {
       const p = jamBridge?.evalAndPlay?.(src, bpm);
@@ -1694,6 +1741,25 @@ async function saveGraph() {
 
 async function runGraph() {
   const url = resolveApiUrl(`api/graph/${GRAPH_NAME}/run`);
+  const grokNodes = graph.nodes?.filter((n) => n.type === "music.grok") || [];
+  if (grokNodes.length) {
+    const results = await runGrokMusicChain(graph, {
+      core: floatWorkspace?.getMusicCore?.(),
+      strudelPane: floatWorkspace?.getStrudelPane?.(),
+      song: null,
+      applyPack: (pid) => {
+        graph = applyMusicPackToGraph(graph, pid, collab?.clientId || "local");
+      },
+    });
+    collab?.broadcastPatch?.({ nodes: graph.nodes });
+    draw();
+    if (!url) {
+      vizLog.textContent = `run · grok chain · ${results.length} node(s) · ${results.map((r) => r.result?.genreId).join(", ")}`;
+      syncFloatPanels();
+      drawViz();
+      return;
+    }
+  }
   if (!url) {
     vizLog.textContent = "run · local shell (needs API host for execution)";
     syncFloatPanels();
@@ -2008,10 +2074,16 @@ function exportGraphState() {
   window.qbpm.clearLiveVideos = () => floatWorkspace?.getVideoFeed?.()?.getLiveRail?.()?.clearAll?.();
   window.qbpm.onTerminalCommand = async (line) => {
     const low = line.trim().toLowerCase();
+    const musicHit = await handleMusicCommand(line, musicCommandCtx());
+    if (musicHit) return;
     if (low === "run") await runGraph();
     else if (low === "save") await saveGraph();
     else if (low === "graph" || low === "agent") await loadGraph();
-    else if (low.startsWith("align ")) {
+    else if (low === "studio billboard-vocal" || low === "studio vocal") {
+      graph = applyStudioPreset(graph, "billboard-vocal", collab?.clientId || "local");
+      draw();
+      collabShell?.appendPromptOutput?.("studio · billboard-vocal chain loaded");
+    } else if (low.startsWith("align ")) {
       if (low.includes("node")) alignView("node");
       else alignView("graph");
     }

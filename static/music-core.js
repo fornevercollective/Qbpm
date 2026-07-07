@@ -10,6 +10,8 @@ import {
   quantizeMidiEdo,
   negativeHarmonyMidi,
 } from "./music-theory.js";
+import { playGmNote } from "./gm-audio.js";
+import { applyGenreToCore as applyGenrePreset } from "./music-ai.js";
 
 export const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 export const STEP_COUNT = 16;
@@ -220,6 +222,7 @@ export function createMusicCore(opts = {}) {
     delay: 0,
   };
   let autotuneOn = localStorage.getItem("qbpm-autotune") === "1";
+  let voiceId = localStorage.getItem("qbpm-music-voice") || "gm-grand";
   let lastDetectedMidi = null;
   let waveformCapture = null;
   let seqTimer = null;
@@ -407,21 +410,25 @@ export function createMusicCore(opts = {}) {
     return microtonalFreq(base, t.microtonal?.cents || 0, t.microtonal?.edo || 12);
   }
 
-  function playTone(freq, ms = 180) {
+  async function playTone(freq, ms = 180) {
     const ctx = ensureAudio();
     const tuned = applyAutotune(freq);
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = "sine";
-    o.frequency.value = tuned;
-    const env = envGainAt(seqOn ? seqStep : 0);
-    g.gain.value = 0.35 * env;
-    o.connect(g);
-    g.connect(masterGain);
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + ms / 1000);
-    o.stop(ctx.currentTime + ms / 1000 + 0.02);
     const midi = hzToMidi(tuned);
+    if (midi != null && voiceId !== "synth") {
+      await playGmNote(ctx, masterGain, midi, ms / 1000, voiceId);
+    } else {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = tuned;
+      const env = envGainAt(seqOn ? seqStep : 0);
+      g.gain.value = 0.35 * env;
+      o.connect(g);
+      g.connect(masterGain);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + ms / 1000);
+      o.stop(ctx.currentTime + ms / 1000 + 0.02);
+    }
     onNotePlay?.({ hz: tuned, note: midi != null ? midiToName(midi) : tuned });
   }
 
@@ -728,6 +735,13 @@ export function createMusicCore(opts = {}) {
     onJamEval,
     getState,
     setState,
+    getVoice: () => voiceId,
+    setVoice: (v) => {
+      voiceId = v || "gm-grand";
+      localStorage.setItem("qbpm-music-voice", voiceId);
+      localStorage.setItem("qbpm-piano-voice", voiceId);
+      notify();
+    },
+    applyGenre: (genreId) => applyGenrePreset({ setTheory: setTheoryState, setState, MPC_PADS, getTheory: getTheoryState }, genreId),
     destroy,
   };
-}

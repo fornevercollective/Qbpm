@@ -4,6 +4,7 @@
  */
 
 import { HexBridge, parseRoomFromUrl, generateRoomId } from "./piano/hex-bridge.js";
+import { pushHexFrameToGrokpool } from "./grokpool-feed-sync.js";
 import { getTabRuntime } from "./tab-runtime.js";
 import { barPhase, cycleBeatsFromSig, timeSigLabel } from "./music-theory.js";
 
@@ -267,6 +268,7 @@ export function createHeaderStage(opts = {}) {
     hexBridge.onHexFrame = (msg) => {
       if (hexPreview) hexBridge.drawHexFrame(hexPreview, msg.hex, msg.res, msg.mode);
       hexPreview?.classList.add("live");
+      pushHexFrameToGrokpool(msg, "qbpm");
     };
     hexBridge.startReceive();
   }

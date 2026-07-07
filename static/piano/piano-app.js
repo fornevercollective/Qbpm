@@ -1,6 +1,10 @@
 import { SONGS, ALBUMS, readySongs, albumFor, colorForMidi, MIDI_TO_NAME, NAME_TO_MIDI, NOTE_COLORS } from './songs.js';
 import { initStreamPanel } from './stream-panel.js';
 import { STACK_LINKS } from './hex-bridge.js';
+import { playGmNote } from '../gm-audio.js';
+import { DEFAULT_VOICES } from './instrument-repo.js';
+import { suggestGenreFromSong } from '../genre-presets.js';
+import { loadMidiFromFile, midiToQbpmSong } from '../midi-import.js';
 
 // ─── State ───────────────────────────────────────────────────────────────────
 const state = {
@@ -25,6 +29,8 @@ const state = {
   dockFlipH: localStorage.getItem('qbpm-piano-dock-flip') === '1',
   phoneRotate: localStorage.getItem('qbpm-piano-phone-rotate') === '1',
   lastGuideMidi: null,
+  voice: localStorage.getItem('qbpm-piano-voice') || 'salamander',
+  suggestedGenre: null,
 };
 
 let rafId = null;
@@ -89,6 +95,16 @@ function init() {
     () => activeNotesForStream(state.song, state.beat),
     () => $('#camera-overlay'),
   );
+
+  try {
+    const voiceBc = new BroadcastChannel('piano-buddy-state');
+    voiceBc.onmessage = (ev) => {
+      if (ev.data?.type === 'voice' && ev.data.voice) {
+        state.voice = ev.data.voice;
+        $('#voice-select') && ($('#voice-select').value = state.voice);
+      }
+    };
+  } catch (_) {}
 
   // Prevent sleep during mirror
   document.addEventListener('visibilitychange', () => {
@@ -437,19 +453,11 @@ function showCelebrate() {
 }
 
 // ─── Audio feedback (optional guide tones) ───────────────────────────────────
-function playTone(midi, dur = 0.3) {
-  if (!$('#guide-audio').checked) return;
+async function playTone(midi, dur = 0.3) {
+  if (!$('#guide-audio')?.checked) return;
   if (!audioCtx) audioCtx = new AudioContext();
-  const freq = 440 * Math.pow(2, (midi - 69) / 12);
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.frequency.value = freq;
-  osc.type = 'sine';
-  gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-  osc.connect(gain).connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + dur);
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+  await playGmNote(audioCtx, audioCtx.destination, midi, dur, state.voice);
 }
 
 // ─── VexFlow notation + letter row ───────────────────────────────────────────
@@ -1224,7 +1232,42 @@ function safeBind(sel, event, fn) {
   if (el) el.addEventListener(event, fn);
 }
 
+function bindVoiceSelect() {
+  const sel = $('#voice-select');
+  if (!sel) return;
+  sel.innerHTML = DEFAULT_VOICES.map(
+    (v) => `<option value="${v.id}"${v.id === state.voice ? ' selected' : ''}>${v.label}</option>`,
+  ).join('');
+  sel.addEventListener('change', () => {
+    state.voice = sel.value;
+    localStorage.setItem('qbpm-piano-voice', state.voice);
+    localStorage.setItem('qbpm-music-voice', state.voice);
+  });
+  const genreEl = $('#genre-suggest');
+  if (genreEl) {
+    const g = suggestGenreFromSong(state.song);
+    state.suggestedGenre = g.id;
+    genreEl.textContent = `Suggested: ${g.label} (${g.bpm} BPM)`;
+  }
+}
+
 function bindControls() {
+  bindVoiceSelect();
+  $('#midi-import')?.addEventListener('change', async (ev) => {
+    const file = ev.target.files?.[0];
+    if (!file) return;
+    try {
+      const parsed = await loadMidiFromFile(file);
+      const imported = midiToQbpmSong(parsed.notes, { title: file.name.replace(/\.mid(i)?$/i, ''), bpm: state.song?.tempo || 96 });
+      state.song = imported;
+      renderNotation(imported);
+      updateDockSong(imported);
+      bindVoiceSelect();
+    } catch (err) {
+      console.warn('midi import:', err);
+    }
+    ev.target.value = '';
+  });
   safeBind('#play-btn', 'click', togglePlayback);
   safeBind('#dock-play-btn', 'click', togglePlayback);
   safeBind('#restart-btn', 'click', restartPlayback);

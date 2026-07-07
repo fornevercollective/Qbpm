@@ -1,0 +1,545 @@
+{
+  "version": 1,
+  "updated": "2026-07-06",
+  "description": "Curated MIDI + synth/sample packs with piano and organ coverage for Q BPM piano",
+  "gmPrograms": {
+    "piano": [
+      { "program": 0, "name": "Acoustic Grand Piano", "aliases": ["gm_piano", "acoustic_piano", "grand_piano"] },
+      { "program": 1, "name": "Bright Acoustic Piano", "aliases": ["gm_bright_acoustic_piano", "bright_piano"] },
+      { "program": 2, "name": "Electric Grand Piano", "aliases": ["gm_electric_grand_piano"] },
+      { "program": 3, "name": "Honky-tonk Piano", "aliases": ["gm_honky_tonk_piano"] },
+      { "program": 4, "name": "Electric Piano 1", "aliases": ["gm_epiano1", "rhodes", "wurlitzer"] },
+      { "program": 5, "name": "Electric Piano 2", "aliases": ["gm_epiano2", "chorused_epiano"] },
+      { "program": 6, "name": "Harpsichord", "aliases": ["gm_harpsichord"] },
+      { "program": 7, "name": "Clavinet", "aliases": ["gm_clavinet"] }
+    ],
+    "organ": [
+      { "program": 16, "name": "Drawbar Organ", "aliases": ["gm_drawbar_organ", "hammond", "b3"] },
+      { "program": 17, "name": "Percussive Organ", "aliases": ["gm_percussive_organ"] },
+      { "program": 18, "name": "Rock Organ", "aliases": ["gm_rock_organ", "vox"] },
+      { "program": 19, "name": "Church Organ", "aliases": ["gm_church_organ", "pipe_organ"] },
+      { "program": 20, "name": "Reed Organ", "aliases": ["gm_reed_organ", "harmonium"] },
+      { "program": 21, "name": "Accordion", "aliases": ["gm_accordion"] },
+      { "program": 22, "name": "Harmonica", "aliases": ["gm_harmonica"] },
+      { "program": 23, "name": "Bandoneon", "aliases": ["gm_bandoneon", "tango_accordion"] }
+    ]
+  },
+  "platforms": [
+    {
+      "id": "strudel",
+      "name": "Strudel",
+      "type": "live-coding",
+      "url": "https://strudel.cc/",
+      "docs": "https://strudel.cc/learn/synths/",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "integration": "esm @strudel/web; samples() + sound() / bank()",
+      "notes": "Q BPM already loads @strudel/web in strudel-pane.js"
+    },
+    {
+      "id": "tidal",
+      "name": "TidalCycles",
+      "type": "live-coding",
+      "url": "https://tidalcycles.org/",
+      "docs": "https://tidalcycles.org/docs/configuration/AudioSamples/default_library/",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "integration": "SuperDirt samples; superpiano bank in Dirt-Samples",
+      "notes": "Dirt-Samples bundled via felixroos/dough-samples"
+    },
+    {
+      "id": "sonic-pi",
+      "name": "Sonic Pi",
+      "type": "live-coding",
+      "url": "https://sonic-pi.net/",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "integration": "Ruby synth :piano, :piano_phase; built-in sampled piano",
+      "notes": "Not browser-native; useful reference timbre"
+    },
+    {
+      "id": "estuary",
+      "name": "Estuary",
+      "type": "live-coding",
+      "url": "https://github.com/dktr0/estuary",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "integration": "Tidal/Strudel-compatible sample paths",
+      "notes": "felixroos/estuary-samples on GitHub"
+    },
+    {
+      "id": "gibber",
+      "name": "Gibber",
+      "type": "live-coding",
+      "url": "https://charlie-roberts.com/gibber/",
+      "hasPiano": false,
+      "hasOrgan": false,
+      "integration": "WebAudio synths; no dedicated piano/organ packs",
+      "notes": "FM/wavetable focus — use GM soundfont layer instead"
+    },
+    {
+      "id": "tonejs",
+      "name": "Tone.js",
+      "type": "web-audio",
+      "url": "https://tonejs.github.io/",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "integration": "Sampler + Soundfont; load SF2 or multi-sample piano",
+      "notes": "Pair with webaudiofont or Salamander samples"
+    },
+    {
+      "id": "webaudiofont",
+      "name": "WebAudioFont",
+      "type": "web-audio",
+      "url": "https://surikov.github.io/webaudiofont/",
+      "data": "https://surikov.github.io/webaudiofontdata/",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "integration": "Player preset by GM program; dynamic load per instrument",
+      "notes": "Best drop-in for Q BPM piano — replaces oscillator playTone()"
+    }
+  ],
+  "samplePacks": [
+    {
+      "id": "dough-piano",
+      "name": "Strudel default piano (Salamander)",
+      "platform": "strudel",
+      "category": "sample",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "instruments": ["piano"],
+      "license": "CC-BY-3.0",
+      "author": "Alexander Holm",
+      "url": "https://github.com/felixroos/dough-samples",
+      "manifest": "https://raw.githubusercontent.com/felixroos/dough-samples/main/piano.json",
+      "base": "https://raw.githubusercontent.com/felixroos/dough-samples/main/piano/",
+      "source": "https://archive.org/details/SalamanderGrandPianoV3",
+      "range": "A0–C8",
+      "format": "mp3",
+      "strudel": "samples(piano.json); n('c4').sound('piano')",
+      "priority": 1,
+      "recommended": true
+    },
+    {
+      "id": "salamander-sfz",
+      "name": "Salamander Grand Piano SFZ",
+      "platform": "sfz",
+      "category": "sample",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "instruments": ["acoustic_grand_piano"],
+      "license": "CC-BY-3.0",
+      "author": "Alexander Holm",
+      "url": "https://github.com/sfzinstruments/SalamanderGrandPiano",
+      "mirror": "https://sfzinstruments.github.io/pianos/salamander/",
+      "format": "sfz+wav",
+      "priority": 1,
+      "recommended": true
+    },
+    {
+      "id": "dirt-superpiano",
+      "name": "Tidal superpiano",
+      "platform": "tidal",
+      "category": "sample",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "instruments": ["superpiano"],
+      "license": "community",
+      "url": "https://github.com/tidalcycles/Dirt-Samples",
+      "manifest": "https://raw.githubusercontent.com/felixroos/dough-samples/main/Dirt-Samples.json",
+      "strudel": "s('superpiano').n('c4')",
+      "priority": 2
+    },
+    {
+      "id": "vcsl-keys",
+      "name": "VCSL Keys",
+      "platform": "versilian",
+      "category": "sample",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "instruments": ["upright_piano", "harpsichord", "celesta", "pipe_organ", "reed_organ"],
+      "license": "CC0",
+      "author": "Versilian Studios",
+      "url": "https://versilian-studios.com/vcsl-keys/",
+      "github": "https://github.com/sgossner/VCSL",
+      "format": "wav",
+      "priority": 1,
+      "recommended": true
+    },
+    {
+      "id": "vcsl-full",
+      "name": "VCSL (full orchestra)",
+      "platform": "versilian",
+      "category": "sample",
+      "hasPiano": false,
+      "hasOrgan": false,
+      "instruments": ["percussion", "winds", "strings"],
+      "license": "CC0",
+      "url": "https://versilian-studios.com/vcsl/",
+      "manifest": "https://raw.githubusercontent.com/felixroos/dough-samples/main/vcsl.json",
+      "notes": "Bundled in Strudel; keys/organ in separate VCSL Keys pack",
+      "priority": 3
+    },
+    {
+      "id": "leeds-town-hall-organ",
+      "name": "Leeds Town Hall Organ",
+      "platform": "versilian",
+      "category": "sample",
+      "hasPiano": false,
+      "hasOrgan": true,
+      "instruments": ["pipe_organ"],
+      "license": "free (check site)",
+      "url": "https://www.samplephonics.com/products/free/sampler-instruments/the-leeds-town-hall-organ",
+      "format": "sampler-preset",
+      "priority": 2
+    },
+    {
+      "id": "estuary-samples",
+      "name": "Estuary samples",
+      "platform": "estuary",
+      "category": "sample",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "instruments": ["piano", "keys"],
+      "license": "varies",
+      "url": "https://github.com/felixroos/estuary-samples",
+      "strudel": "samples('github:felixroos/estuary-samples/main')",
+      "priority": 3
+    },
+    {
+      "id": "felixroos-samples",
+      "name": "felixroos/samples",
+      "platform": "strudel",
+      "category": "sample",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "instruments": ["piano", "keys"],
+      "license": "varies",
+      "url": "https://github.com/felixroos/samples",
+      "strudel": "samples('github:felixroos/samples/main')",
+      "priority": 3
+    },
+    {
+      "id": "dough-community",
+      "name": "Dough community repos",
+      "platform": "strudel",
+      "category": "sample",
+      "hasPiano": false,
+      "hasOrgan": false,
+      "instruments": ["drums", "breaks", "waveforms"],
+      "url": "https://github.com/felixroos/dough-samples#other-sample-repos",
+      "repos": [
+        "github:yaxu/clean-breaks/main",
+        "github:yaxu/spicule/master",
+        "github:Bubobubobubobubo/Dough-Waveforms/main",
+        "github:Bubobubobubobubo/Dough-Fox/main"
+      ],
+      "notes": "Drum/waveform focus — listed for Strudel ecosystem completeness",
+      "priority": 4
+    }
+  ],
+  "soundfonts": [
+    {
+      "id": "strudel-gm",
+      "name": "Strudel GM soundfonts",
+      "category": "soundfont",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "instruments": "GM programs 0–7 (piano), 16–23 (organ)",
+      "license": "per-bank (FluidR3, GeneralUser, etc.)",
+      "url": "https://codeberg.org/uzu/strudel",
+      "gmMap": "packages/soundfonts/gm.mjs",
+      "banks": ["FluidR3_GM", "GeneralUserGS", "JCLive", "Aspirin", "Chaos"],
+      "strudel": "n('c4').sound('gm_piano') | .sound('gm_church_organ')",
+      "priority": 1,
+      "recommended": true
+    },
+    {
+      "id": "generaluser-gs",
+      "name": "GeneralUser GS",
+      "category": "soundfont",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "instruments": "full GM + GS",
+      "license": "free for any use",
+      "author": "S. Christian Collins",
+      "url": "https://www.schristiancollins.com/generaluser",
+      "format": "sf2",
+      "size": "~30MB",
+      "priority": 1,
+      "recommended": true
+    },
+    {
+      "id": "fluidr3",
+      "name": "FluidR3 GM",
+      "category": "soundfont",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "instruments": "full GM",
+      "license": "CC-BY-3.0",
+      "url": "https://github.com/musescore/MuseScore/tree/master/share/sound",
+      "format": "sf2",
+      "webaudiofont": "https://surikov.github.io/webaudiofontdata/sound/FluidR3_GM/",
+      "priority": 1,
+      "recommended": true
+    },
+    {
+      "id": "webaudiofont-gs",
+      "name": "WebAudioFont GM presets",
+      "category": "soundfont",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "instruments": "all 128 GM programs as pre-rendered JS",
+      "license": "per underlying SF2",
+      "url": "https://surikov.github.io/webaudiofontdata/sound/",
+      "format": "js+wav",
+      "integration": "new WebAudioFontPlayer(); player.loader.startPreset(ctx, preset, 0)",
+      "priority": 1,
+      "recommended": true
+    },
+    {
+      "id": "soundfont-player",
+      "name": "soundfont-player",
+      "category": "soundfont",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "instruments": "any SF2 via FluidSynth WASM",
+      "license": "MIT + SF2 license",
+      "url": "https://github.com/danigb/soundfont-player",
+      "demo": "https://danigb.github.io/soundfont-player/",
+      "format": "sf2",
+      "priority": 2
+    },
+    {
+      "id": "gm-500-archive",
+      "name": "500 SoundFonts GM archive",
+      "category": "soundfont",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "instruments": "500+ GM sets",
+      "license": "varies per font",
+      "url": "https://archive.org/details/500-soundfonts-full-gm-sets",
+      "format": "sf2",
+      "priority": 3,
+      "notes": "Curate GeneralUser, FluidR3, JCLive for production"
+    },
+    {
+      "id": "polyphone-library",
+      "name": "Polyphone soundfont library",
+      "category": "soundfont",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "instruments": "community GM fonts",
+      "license": "varies",
+      "url": "https://www.polyphone.io/en/soundfonts",
+      "pianoTag": "https://www.polyphone.io/en/soundfonts/pianos",
+      "priority": 3
+    },
+    {
+      "id": "musical-artifacts",
+      "name": "Musical Artifacts",
+      "category": "aggregator",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "instruments": "SF2, SFZ, samples",
+      "license": "per artifact",
+      "url": "https://musical-artifacts.com/",
+      "searchPiano": "https://musical-artifacts.com/artifacts?tags=piano",
+      "searchOrgan": "https://musical-artifacts.com/artifacts?search=organ",
+      "priority": 2
+    },
+    {
+      "id": "freepats-piano",
+      "name": "FreePats acoustic grand piano",
+      "category": "soundfont",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "instruments": ["acoustic_grand_piano"],
+      "license": "GPL / CC",
+      "url": "https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html",
+      "format": "sf2+sfz",
+      "priority": 2
+    }
+  ],
+  "midiSources": [
+    {
+      "id": "qbpm-catalog",
+      "name": "Q BPM piano catalog",
+      "category": "midi",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "format": "json",
+      "url": "web/piano/catalog.js",
+      "notes": "Built-in lesson songs with {midi, beat, duration} events",
+      "priority": 1,
+      "local": true
+    },
+    {
+      "id": "piano-midi-de",
+      "name": "piano-midi.de",
+      "category": "midi",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "format": "mid",
+      "url": "http://piano-midi.de/",
+      "license": "check per piece",
+      "notes": "Classical piano MIDIs — Bach, Beethoven, Chopin, etc.",
+      "priority": 1,
+      "recommended": true
+    },
+    {
+      "id": "giantmidi-piano",
+      "name": "GiantMIDI-Piano",
+      "category": "midi",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "format": "mid",
+      "url": "https://github.com/bytedance/GiantMIDI-Piano",
+      "license": "research dataset",
+      "notes": "10,000+ classical piano MIDIs with composer metadata",
+      "priority": 1,
+      "recommended": true
+    },
+    {
+      "id": "lakh-midi",
+      "name": "Lakh MIDI Dataset (LMD)",
+      "category": "midi",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "format": "mid",
+      "url": "https://colinraffel.com/projects/lmd/",
+      "count": 176581,
+      "license": "research",
+      "notes": "Filter by program 0–7 / 16–23 for piano/organ tracks",
+      "priority": 2
+    },
+    {
+      "id": "awesome-midi-sources",
+      "name": "awesome-midi-sources",
+      "category": "aggregator",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "format": "links",
+      "url": "https://github.com/albertmeronyo/awesome-midi-sources",
+      "license": "CC0",
+      "notes": "Curated index — classical, pop, games, drums",
+      "priority": 2
+    },
+    {
+      "id": "bach-midi",
+      "name": "Dave's J.S. Bach Page",
+      "category": "midi",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "format": "mid",
+      "url": "http://www.jsbach.net/midi/",
+      "priority": 2
+    },
+    {
+      "id": "musedata",
+      "name": "MuseData",
+      "category": "midi",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "format": "mid+musedata+humdrum",
+      "url": "http://musedata.org/",
+      "priority": 2
+    },
+    {
+      "id": "reddit-midi-archive",
+      "name": "Largest MIDI collection (Reddit)",
+      "category": "midi",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "format": "mid",
+      "url": "https://www.reddit.com/r/WeAreTheMusicMakers/comments/3ajwe4/the_largest_midi_collection_on_the_internet/",
+      "priority": 3
+    },
+    {
+      "id": "freemidi",
+      "name": "FreeMidi",
+      "category": "midi",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "format": "mid",
+      "url": "https://freemidi.org",
+      "priority": 3
+    },
+    {
+      "id": "midiworld",
+      "name": "MIDIWORLD",
+      "category": "midi",
+      "hasPiano": true,
+      "hasOrgan": false,
+      "format": "mid",
+      "url": "http://www.midiworld.com/",
+      "priority": 3
+    }
+  ],
+  "audioCleaning": [
+    {
+      "id": "localvqe",
+      "name": "LocalVQE",
+      "category": "neural-audio",
+      "hasPiano": false,
+      "hasOrgan": false,
+      "url": "https://github.com/localai-org/LocalVQE",
+      "demo": "https://huggingface.co/spaces/LocalAI-io/LocalVQE-demo",
+      "models": ["v1.3-joint", "v1.2-joint", "v1.4-aec", "pi-49k"],
+      "capabilities": ["aec", "noise-suppression", "dereverb"],
+      "license": "Apache-2.0",
+      "integration": "audio.localvqe node → liblocalvqe.so / GGUF weights",
+      "notes": "16 kHz speech; needs mic + speaker reference for AEC. Stub node in Q BPM graph; wire to local binary when built.",
+      "priority": 1,
+      "recommended": true
+    }
+  ],
+  "commercial": [
+    {
+      "id": "splice",
+      "name": "Splice",
+      "category": "commercial",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "url": "https://splice.com/",
+      "license": "subscription — no redistribution",
+      "notes": "Piano one-shots, loops, organ packs. Download for local use only; cannot ship in Q BPM repo.",
+      "searchTags": ["piano", "organ", "keys", "church organ", "hammond"]
+    },
+    {
+      "id": "native-instruments",
+      "name": "Native Instruments (Kontakt)",
+      "category": "commercial",
+      "hasPiano": true,
+      "hasOrgan": true,
+      "url": "https://www.native-instruments.com/",
+      "notes": "Session Keys, Vintage Organs — export samples for custom packs if licensed"
+    }
+  ],
+  "qbpmIntegration": {
+    "current": {
+      "audio": "Web Audio oscillator (playTone in piano-app.js)",
+      "midi": "catalog.js + songs.js beat/midi events",
+      "strudel": "strudel-pane.js + strudel-samples.js"
+    },
+    "recommendedStack": [
+      {
+        "role": "piano playback",
+        "choice": "dough-piano (Salamander) via Strudel samples OR WebAudioFont GM program 0",
+        "why": "Matches Strudel ecosystem; Salamander is the Strudel default piano timbre"
+      },
+      {
+        "role": "organ playback",
+        "choice": "Strudel gm_church_organ / gm_drawbar_organ OR VCSL Keys pipe organ samples",
+        "why": "Full GM organ family (16–23) without shipping large sample banks"
+      },
+      {
+        "role": "MIDI import",
+        "choice": "GiantMIDI-Piano + piano-midi.de + built-in catalog.js",
+        "why": "Open licenses; convert .mid → {midi, beat, duration} for piano roll"
+      }
+    ],
+    "strudelLoadSnippet": "const ds = 'https://raw.githubusercontent.com/felixroos/dough-samples/main/';\nawait samples(`${ds}piano.json`);\n// piano: n('c4 e4 g4').sound('piano')\n// organ: n('c3').sound('gm_church_organ')",
+    "webaudiofontSnippet": "import { WebAudioFontPlayer } from 'webaudiofont';\nconst player = new WebAudioFontPlayer();\n// preset URLs: surikov.github.io/webaudiofontdata/sound/FluidR3_GM/0000_FluidR3_GM_sf2_file.js"
+  }
+}

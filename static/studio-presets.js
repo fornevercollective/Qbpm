@@ -5,6 +5,7 @@
 
 import { nodeDef } from "./node-registry.js";
 import { appendVideoLaneChain } from "./video-lane-presets.js";
+import { buildMusicNodePack } from "./music-node-packs.js";
 
 const UNDER_OATH_MICS = [
   { id: "kick-in", mic: "kick-in", label: "Kick In", pos: [120, 120], pan: -0.1 },
@@ -30,6 +31,14 @@ export const STUDIO_PRESETS = {
       { id: "percussion", label: "Drum mics · session", color: "#f85149", lane: 0 },
       { id: "video", label: "Video transport", color: "#79c0ff", lane: 1 },
       { id: "music", label: "Music tools", color: "#bc8cff", lane: 2 },
+    ],
+  },
+  "billboard-vocal": {
+    label: "Billboard vocal chain · LocalVQE + autotune",
+    bpm: 96,
+    sections: [
+      { id: "vocal", label: "Vocal chain · AEC/NS/autotune", color: "#f778ba", lane: 0 },
+      { id: "music", label: "Keys + beat", color: "#bc8cff", lane: 1 },
     ],
   },
 };
@@ -139,9 +148,42 @@ export function buildUnderoathDrumSession(owner = "local") {
   };
 }
 
+export function buildBillboardVocalSession(owner = "local") {
+  const preset = STUDIO_PRESETS["billboard-vocal"];
+  const vocal = buildMusicNodePack("billboard-vocal", owner);
+  const keys = buildMusicNodePack("gm-keys", owner);
+  const offset = (n, dx, dy) => ({ ...n, pos: [(n.pos?.[0] || 0) + dx, (n.pos?.[1] || 0) + dy] });
+  const nodes = [
+    ...vocal.nodes.map((n) => offset(n, 0, 0)),
+    ...keys.nodes.map((n) => offset(n, 0, 420)),
+  ];
+  const edges = [...vocal.edges, ...keys.edges];
+  return {
+    version: 1,
+    meta: {
+      name: "studio-billboard-vocal",
+      cpm: preset.bpm,
+      studio: {
+        preset: "billboard-vocal",
+        sections: preset.sections,
+        lanes: preset.sections.map((s) => ({ id: s.id, label: s.label, color: s.color })),
+        theatre: { extended: true, laneHeight: 200 },
+        localvqe: { repo: "https://github.com/localai-org/LocalVQE", model: "v1.3" },
+      },
+    },
+    nodes,
+    edges,
+  };
+}
+
 export function applyStudioPreset(graph, presetId = "underoath-gillespie", owner) {
-  if (presetId !== "underoath-gillespie") return graph;
-  const built = buildUnderoathDrumSession(owner);
+  const built =
+    presetId === "billboard-vocal"
+      ? buildBillboardVocalSession(owner)
+      : presetId === "underoath-gillespie"
+        ? buildUnderoathDrumSession(owner)
+        : null;
+  if (!built) return graph;
   return {
     ...graph,
     meta: { ...graph.meta, ...built.meta },
