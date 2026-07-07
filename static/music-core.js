@@ -745,3 +745,4 @@ export function createMusicCore(opts = {}) {
     applyGenre: (genreId) => applyGenrePreset({ setTheory: setTheoryState, setState, MPC_PADS, getTheory: getTheoryState }, genreId),
     destroy,
   };
+}
