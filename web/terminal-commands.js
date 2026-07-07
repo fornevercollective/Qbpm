@@ -52,6 +52,25 @@ export const TERMINAL_COMMAND_GROUPS = [
     ],
   },
   {
+    title: "music · grok",
+    cmds: [
+      { cmd: "music genre <id>", desc: "Any parent/sub genre (trap, drill, house, worship, …)" },
+      { cmd: "music tree", desc: "List genre taxonomy (16 parents · 60+ sub-genres)" },
+      { cmd: "music pack <gm-keys|grok-chain|billboard-vocal|…>", desc: "AI-load node pack onto graph" },
+      { cmd: "music grok <prompt>", desc: "Grok handler → pack + genre + chain emit" },
+      { cmd: "grok <prompt>", desc: "Alias — same as music grok" },
+      { cmd: "music chain", desc: "Run all music.grok nodes → downstream chain" },
+      { cmd: "music node <id> <prompt>", desc: "Prompt a specific music.grok node in chain" },
+      { cmd: "music voice <salamander|gm-grand|gm-hammond|…>", desc: "Set GM/sample voice for piano + music lab" },
+      { cmd: "music bpm <n>", desc: "Lock tempo" },
+      { cmd: "music seq play|stop", desc: "Beat sequencer transport" },
+      { cmd: "music import midi <url>", desc: "Fetch .mid into sequencer" },
+      { cmd: "music suggest|arrange|catalog|list", desc: "Genre suggest · GM arrange · show packs" },
+      { cmd: "studio billboard-vocal", desc: "Load LocalVQE + autotune vocal chain preset" },
+      { cmd: "trap · gospel · vocal chain", desc: "Prompt bar aliases → music grok" },
+    ],
+  },
+  {
     title: "daw · audio tools",
     cmds: [
       { cmd: "DAW chips (music lab)", desc: "Link gridSound · openDAW · Zrythm · butterDAWg · generic-daw · TuneFlow · midimech" },

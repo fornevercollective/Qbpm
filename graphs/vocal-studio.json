@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "vocal-studio",
+    "cpm": 96,
+    "genre": "rnb",
+    "studio": {
+      "preset": "billboard-vocal",
+      "localvqe": {
+        "repo": "https://github.com/localai-org/LocalVQE",
+        "model": "localvqe-v1.3-4.8M-f32.gguf",
+        "weights": "https://huggingface.co/LocalAI-io/LocalVQE"
+      }
+    },
+    "theory": {
+      "timeSignature": [4, 4],
+      "swing": 14,
+      "bpm": 96,
+      "structure": "verse"
+    }
+  },
+  "nodes": [],
+  "edges": [],
+  "_note": "Load via: studio billboard-vocal — builds vocal chain + GM keys from music-node-packs.js"
+}

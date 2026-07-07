@@ -16,6 +16,10 @@ import {
   timeSigLabel,
   resolveTransportTheory,
 } from "./music-theory.js";
+import { listGenres, listGenreTree } from "./genre-presets.js";
+import { listMusicNodePacks } from "./music-node-packs.js";
+import { DEFAULT_VOICES } from "./piano/instrument-repo.js";
+import { importMidiToCore } from "./music-ai.js";
 import {
   NOTATION_SYSTEMS,
   KEYS,
@@ -95,6 +99,9 @@ export function createMusicLab(coreOrOpts, maybeOpts) {
     onJamEval = core.onJamEval,
     onDawLink,
     onDawOpen,
+    onMusicPack,
+    onGenreApply,
+    onGrokChain,
   } = opts;
 
   let wfRaf = 0;
@@ -149,6 +156,34 @@ export function createMusicLab(coreOrOpts, maybeOpts) {
           </div>
           <div class="ml-theory-presets qb-btn-group" aria-label="Arrangement presets">
             ${Object.values(THEORY_PRESETS).map((p) => `<button type="button" class="qb-chip ml-preset" data-preset="${p.id}" title="${p.label}">${p.label}</button>`).join("")}
+          </div>
+          <div class="ml-genre-tree" aria-label="Genre tree">
+            <label class="ml-theory-field" title="Parent genre">
+              <span>genre</span>
+              <select id="ml-genre-parent">
+                <option value="">all</option>
+                ${listGenreTree().map((p) => `<option value="${p.id}">${p.label}</option>`).join("")}
+              </select>
+            </label>
+            <label class="ml-theory-field" title="Sub-genre">
+              <span>sub</span>
+              <select id="ml-genre-sub"><option value="">—</option></select>
+            </label>
+            <button type="button" class="qb-chip" id="ml-grok-chain" title="Run grok music chain on graph">◎ grok</button>
+          </div>
+          <div class="ml-genre-presets qb-btn-group" aria-label="Genre styles" id="ml-genre-chips">
+            ${listGenres().filter((g) => !g.parent).slice(0, 12).map((g) => `<button type="button" class="qb-chip ml-genre" data-genre="${g.id}" title="${g.bpm} BPM">${g.label}</button>`).join("")}
+          </div>
+          <div class="ml-theory-row">
+            <label class="ml-theory-field" title="GM instrument voice">
+              <span>voice</span>
+              <select id="ml-voice">${DEFAULT_VOICES.map((v) => `<option value="${v.id}">${v.label}</option>`).join("")}</select>
+            </label>
+            <button type="button" class="qb-chip" id="ml-ai-pack" title="AI load node pack to graph">⊕ pack</button>
+            <label class="ml-theory-field" title="Import MIDI file">
+              <span>mid</span>
+              <input id="ml-midi-import" type="file" accept=".mid,.midi" />
+            </label>
           </div>
           <div class="ml-theory-meta" id="ml-theory-meta">4/4 · verse</div>
         </div>
@@ -581,6 +616,63 @@ export function createMusicLab(coreOrOpts, maybeOpts) {
         if (!preset) return;
         patchTheory({ ...preset.theory, preset: preset.id });
       });
+    });
+    const genreTree = listGenreTree();
+    const parentSel = document.getElementById("ml-genre-parent");
+    const subSel = document.getElementById("ml-genre-sub");
+    const chipsHost = document.getElementById("ml-genre-chips");
+
+    function renderSubgenres(parentId) {
+      if (!subSel) return;
+      const p = genreTree.find((x) => x.id === parentId);
+      subSel.innerHTML = '<option value="">—</option>'
+        + (p?.subgenres || []).map((s) => `<option value="${s.id}">${s.label}</option>`).join("");
+      if (chipsHost) {
+        const chips = parentId
+          ? (p?.subgenres || [])
+          : listGenres().filter((g) => !g.parent).slice(0, 16);
+        chipsHost.innerHTML = chips.map(
+          (g) => `<button type="button" class="qb-chip ml-genre" data-genre="${g.id}" title="${g.bpm || ""} BPM">${g.label}</button>`,
+        ).join("");
+        chipsHost.querySelectorAll(".ml-genre").forEach(bindGenreChip);
+      }
+    }
+
+    function bindGenreChip(btn) {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.genre;
+        const applied = core.applyGenre?.(id);
+        onGenreApply?.(id);
+        if (applied?.strudel) onStrudelPlay?.(`setcps(${(applied.genre?.bpm || 120) / 60 / 2})\n${applied.strudel}`);
+      });
+    }
+
+    parentSel?.addEventListener("change", () => renderSubgenres(parentSel.value));
+    subSel?.addEventListener("change", () => {
+      if (subSel.value) {
+        core.applyGenre?.(subSel.value);
+        onGenreApply?.(subSel.value);
+      }
+    });
+    document.getElementById("ml-grok-chain")?.addEventListener("click", () => onGrokChain?.());
+    renderSubgenres("");
+    document.getElementById("ml-voice")?.addEventListener("change", (ev) => {
+      core.setVoice?.(ev.target.value);
+    });
+    document.getElementById("ml-ai-pack")?.addEventListener("click", () => {
+      const packs = listMusicNodePacks();
+      const pick = packs[Math.floor(Math.random() * packs.length)]?.id || "gm-keys";
+      onMusicPack?.(pick);
+    });
+    document.getElementById("ml-midi-import")?.addEventListener("change", async (ev) => {
+      const file = ev.target.files?.[0];
+      if (!file) return;
+      try {
+        await importMidiToCore(file, core);
+      } catch (err) {
+        console.warn("midi import:", err);
+      }
+      ev.target.value = "";
     });
 
     document.getElementById("ml-notation-sys")?.addEventListener("change", (ev) => {

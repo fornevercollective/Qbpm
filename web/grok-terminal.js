@@ -279,6 +279,16 @@
     showGraph: () => inject("graph\n"),
     agent: () => inject("agent\n"),
     help: () => inject("help\n"),
+    musicGenre: (id = "pop") => inject(`music genre ${id}\n`),
+    musicPack: (id = "gm-keys") => inject(`music pack ${id}\n`),
+    musicGrok: (prompt = "pop vocal piano") => inject(`music grok ${prompt}\n`),
+    grokMusic: (prompt = "pop vocal piano") => inject(`grok ${prompt}\n`),
+    musicChain: () => inject("music chain\n"),
+    musicTree: () => inject("music tree\n"),
+    loadGrokChain: () => inject("music pack grok-chain\n"),
+    musicVoice: (id = "gm-grand") => inject(`music voice ${id}\n`),
+    musicBpm: (n = 120) => inject(`music bpm ${n}\n`),
+    studioVocal: () => inject("studio billboard-vocal\n"),
   };
 
   global.qbpm = global.qbpm || {};

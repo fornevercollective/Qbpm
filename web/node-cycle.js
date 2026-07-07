@@ -14,6 +14,7 @@ export function nodeCycleMode(n) {
   const t = n?.type || "";
   if (t === "core.clock" || t === "music.clock") return "cycle";
   if (t === "music.score") return "steps";
+  if (t === "music.grok") return "cycle";
   if (t.startsWith("music.")) return t === "music.score" || t === "music.notation" ? "steps" : "beat";
   if (t === "audio.mic" || t === "studio.session") return "beat";
   if (t === "tool.kbatch") return "beat";

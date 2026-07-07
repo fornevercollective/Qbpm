@@ -20,8 +20,23 @@ export const NODE_DEFS = {
   "music.notation": { w: 200, h: 96, section: "music", in: ["midi"], out: ["midi", "data"] },
   "music.eq": { w: 168, h: 80, section: "music", waveform: true, in: ["audio"], out: ["audio"] },
   "music.code": { w: 200, h: 96, section: "music", in: ["midi", "clock"], out: ["midi", "audio", "data"] },
+  "music.grok": {
+    w: 220,
+    h: 96,
+    section: "music",
+    waveform: true,
+    in: ["midi", "clock", "data", "control"],
+    out: ["midi", "audio", "data", "control"],
+  },
   "music.waveform": { w: 200, h: 72, section: "music", waveform: true, in: ["audio"], out: ["audio", "data"] },
   "audio.mic": { w: 156, h: 80, section: "percussion", waveform: true, in: ["control"], out: ["audio"] },
+  "audio.gate": { w: 156, h: 72, section: "vocal", waveform: true, in: ["audio"], out: ["audio"] },
+  "audio.comp": { w: 156, h: 72, section: "vocal", waveform: true, in: ["audio"], out: ["audio"] },
+  "audio.deess": { w: 156, h: 72, section: "vocal", waveform: true, in: ["audio"], out: ["audio"] },
+  "audio.autotune": { w: 168, h: 72, section: "vocal", waveform: true, in: ["audio", "midi"], out: ["audio", "midi"] },
+  "audio.vocal": { w: 180, h: 88, section: "vocal", waveform: true, in: ["audio", "midi", "control"], out: ["audio", "midi"] },
+  "audio.reverb": { w: 156, h: 72, section: "vocal", waveform: true, in: ["audio"], out: ["audio"] },
+  "audio.localvqe": { w: 180, h: 80, section: "vocal", waveform: true, in: ["audio", "data"], out: ["audio", "data"] },
   "studio.session": { w: 220, h: 88, section: "percussion", in: ["audio", "midi", "video", "clock"], out: ["audio", "midi", "video", "data"] },
   "live.ingest": { w: 200, h: 72, section: "video", in: ["video", "data"], out: ["video"] },
   "live.transport": { w: 180, h: 64, section: "video", in: ["video", "clock"], out: ["video", "control"] },
@@ -71,6 +86,18 @@ export function portTypeForNode(n, side, portId = "main") {
 
 export function defaultNodeData(type) {
   if (type === "music.code") return { lang: "strudel", code: 's("bd sd")' };
+  if (type === "music.grok") {
+    return {
+      prompt: "pop vocal piano billboard",
+      mode: "chain",
+      autoPack: true,
+      autoGenre: true,
+      autoArrange: true,
+      autoStrudel: true,
+      useApi: true,
+      status: "idle",
+    };
+  }
   if (type === "music.eq") return { bands: { low: 0, mid: 0, high: 0 } };
   if (type === "music.loop") return { bars: 4, bpm: 120 };
   if (type === "music.beatpad") return { pattern: { pads: { main: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0] } } };
@@ -80,6 +107,14 @@ export function defaultNodeData(type) {
   if (type === "live.rail") return { urls: [], features: ["rail"] };
   if (type === "live.ingest") return { urls: [], ingestUrl: "" };
   if (type?.startsWith("audio.mic") || type === "audio.mic") return { mic: "snare-top", gain: 0, pan: 0 };
+  if (type === "audio.gate") return { threshold: -40, release: 100 };
+  if (type === "audio.comp") return { ratio: 4, attack: 10, release: 100, threshold: -18 };
+  if (type === "audio.deess") return { freq: 7000, amount: 0.4 };
+  if (type === "audio.autotune") return { speed: 10, key: "C", scale: "major", formant: 1 };
+  if (type === "audio.vocal") return { preset: "pop-lead", doubler: 0.12, width: 0.35, modulation: "light" };
+  if (type === "audio.reverb") return { room: 0.25, preDelay: 20, wet: 0.22 };
+  if (type === "audio.localvqe") return { model: "v1.3", mode: "aec+ns+dereverb", ref: "speaker-loopback", status: "stub" };
+  if (type === "music.piano") return { voice: "salamander", gmProgram: 0 };
   if (type === "studio.session") return { preset: "underoath-gillespie", bpm: 148 };
   return undefined;
 }
@@ -89,5 +124,6 @@ export function defaultNodeCode(type) {
     return JSON.stringify(defaultNodeData(type) || { urls: [] }, null, 2);
   }
   if (type === "music.code") return 's("bd*4, sd*2")';
+  if (type === "music.grok") return 'gospel organ piano trap vocal';
   return 'result = {"hello": "qbpm"}';
 }
