@@ -1,1 +1,1 @@
-the full correct content here from the write_file I did
+FULL_CONTENT_FROM_LOCAL
